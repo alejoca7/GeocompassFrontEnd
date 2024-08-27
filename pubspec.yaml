@@ -1,0 +1,73 @@
+name: flutter_app
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10+1
+  google_fonts: ^4.0.3
+  http: ^1.2.2
+  image_picker: ^1.0.0
+  flutter_map: ^5.0.0
+  latlong2: ^0.9.0
+  geolocator: ^8.2.0
+  path_provider: ^2.0.11
+  turf: ^0.0.10
+  permission_handler: ^11.3.1
+  google_maps_flutter: ^2.0.6
+  geocoding: ^2.0.5
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: NATS
+      fonts:
+        - asset: assets/fonts/NATS-Regular.ttf
+
+  assets:
+    - assets/images/logogeocompass_31.png
+    - assets/images/custom_icon.png
+    - assets/images/add-location.png
+    - assets/images/logogeocompass_111.png
+    - assets/images/logogeocompass_41.png
+    - assets/images/cdmp_fw_9_vr_x_01.png
+    - assets/images/cdmp_fw_9_vr_x_02.png
+    - assets/images/cdmp_fw_9_vr_x_0.png
+    - assets/vectors/logout_1_x2.svg
+    - assets/vectors/group_70347_x2.svg
+    - assets/vectors/combined_shape_x2.svg
+    - assets/vectors/logout_3_x2.svg
+    - assets/vectors/combined_shape_3_x2.svg
+    - assets/vectors/group_70346_x2.svg
+    - assets/vectors/vector_3_x2.svg
+    - assets/vectors/vector_1_x2.svg
+    - assets/vectors/group_7034_x2.svg
+    - assets/vectors/vector_x2.svg
+    - assets/vectors/logout_x2.svg
+    - assets/vectors/combined_shape_1_x2.svg
+    - assets/vectors/vector_2_x2.svg
+    - assets/vectors/combined_shape_5_x2.svg
+    - assets/vectors/combined_shape_2_x2.svg
+    - assets/vectors/group_70343_x2.svg
+    - assets/vectors/show_2_x2.svg
+    - assets/vectors/plus_circle_12_x2.svg
+    - assets/vectors/plus_circle_11_x2.svg
+    - assets/vectors/show_3_x2.svg
+    - assets/vectors/group_70341_x2.svg
+    - assets/vectors/combined_shape_4_x2.svg
+    - assets/vectors/group_70344_x2.svg
+    - assets/vectors/logout_4_x2.svg
