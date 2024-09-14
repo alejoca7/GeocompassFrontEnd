@@ -38,7 +38,7 @@ class Inicio extends StatelessWidget {
                       Image.asset(
                         'assets/images/logogeocompass_31.png', // Asegúrate de tener este logo
                         width: 300,
-                        height: 300,
+                        height: 280,
                       ),
                       SizedBox(height: 10),
                       Text(

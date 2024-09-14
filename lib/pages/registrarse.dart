@@ -17,7 +17,7 @@ class _RegistrarseState extends State<Registrarse> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _registerUser() async {
-    final String apiUrl = "http://192.168.0.6:8080/users";
+    final String apiUrl = "http://192.168.1.68:8080/users";
 
     final Map<String, dynamic> userData = {
       "username": _usernameController.text,

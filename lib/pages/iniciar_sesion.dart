@@ -20,7 +20,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
 
   Future<void> _loginUser() async {
     final String apiUrl =
-        "http://192.168.0.6:8080/login"; // Cambia a la ruta correcta si es necesario
+        "http://192.168.1.68:8080/login"; // Cambia a la ruta correcta si es necesario
 
     print("Username: ${_usernameController.text}");
     print("Password: ${_passwordController.text}");

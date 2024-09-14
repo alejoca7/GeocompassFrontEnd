@@ -30,10 +30,10 @@ class Menu extends StatelessWidget {
               children: [
                 Image.asset(
                   'assets/images/logogeocompass_31.png',
-                  width: 200,
-                  height: 50,
+                  width: 300,
+                  height: 150,
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 17),
                 Text(
                   'GEOCOMPASS',
                   style: GoogleFonts.martelSans(
@@ -53,14 +53,14 @@ class Menu extends StatelessWidget {
               children: [
                 _buildOptionCard(
                   context,
-                  'GEOPUNTOS',
+                  'GEOPOINTS',
                   'assets/images/cdmp_fw_9_vr_x_0.png',
                   Geopoint(), // Pasar la pantalla Geopoint
                 ),
                 SizedBox(height: 40),
                 _buildOptionCard(
                   context,
-                  'GEOCABINA',
+                  'GEOVISITAS',
                   'assets/images/cdmp_fw_9_vr_x_02.png',
                   null, // Coloca la ventana que quieras o null si aún no está implementada
                 ),
