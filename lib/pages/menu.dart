@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/geovisitas.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'geopoint.dart'; // Importa la pantalla de Geopoint
 
@@ -62,7 +63,7 @@ class Menu extends StatelessWidget {
                   context,
                   'GEOVISITAS',
                   'assets/images/cdmp_fw_9_vr_x_02.png',
-                  null, // Coloca la ventana que quieras o null si aún no está implementada
+                  Geovisitas(), // Coloca la ventana que quieras o null si aún no está implementada
                 ),
                 SizedBox(height: 40),
                 _buildOptionCard(

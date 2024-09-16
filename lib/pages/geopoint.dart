@@ -102,8 +102,7 @@ class _GeopointState extends State<Geopoint> {
           final LatLng position =
               LatLng(geopoint['latitude'], geopoint['longitude']);
           final Marker marker = Marker(
-            markerId: MarkerId(geopoint['beneficiary_id']
-                .toString()), // Mostrar beneficiary_id
+            markerId: MarkerId(geopoint['ID'].toString()), // Usar el ID real
             position: position,
             icon: customIcon ?? BitmapDescriptor.defaultMarker,
             infoWindow: InfoWindow(
@@ -112,10 +111,10 @@ class _GeopointState extends State<Geopoint> {
               snippet: geopoint['address'],
               onTap: () {
                 setState(() {
-                  selectedMarkerId = geopoint['beneficiary_id'];
+                  selectedMarkerId = geopoint['ID'];
                 });
                 _showInfoWindow(
-                  geopoint['ID'],
+                  geopoint['ID'], // Usar ID para modificar
                   geopoint['beneficiary_id'],
                   geopoint['nombre'],
                   geopoint['address'],
@@ -358,24 +357,30 @@ class _GeopointState extends State<Geopoint> {
         SnackBar(content: Text('Geopoint guardado con éxito')),
       );
 
+      final geopoint =
+          jsonDecode(response.body); // Obtener el geopoint del servidor
+
       final Marker marker = Marker(
-        markerId: MarkerId(beneficiaryID
-            .toString()), // Usar el beneficiary_id como ID del marcador
+        markerId:
+            MarkerId(geopoint['ID'].toString()), // Usar el ID del geopoint real
         position: location,
         icon: customIcon ?? BitmapDescriptor.defaultMarker,
         infoWindow: InfoWindow(
           title: 'Código Niño: $beneficiaryID - $nombre',
           snippet: address,
           onTap: () {
-            _showInfoWindow(0, beneficiaryID, nombre, address,
-                imageURL); // Mostrar beneficiary_id
+            _showInfoWindow(
+                geopoint['ID'], beneficiaryID, nombre, address, imageURL);
           },
         ),
       );
 
       setState(() {
-        markers.add(marker);
+        markers.add(marker); // Agregar el nuevo marcador inmediatamente
       });
+
+      // Refrescar el estado de los geopoints
+      await _fetchAndDisplayGeopoints();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al guardar el geopoint')),
@@ -437,7 +442,7 @@ class _GeopointState extends State<Geopoint> {
   void _showInfoWindow(int id, int beneficiaryID, String nombre, String address,
       String imageUrl) {
     imageUrl = imageUrl.replaceAll('localhost', '192.168.1.68');
-    imageUrl = imageUrl.replaceAll(r'\', '/');
+    imageUrl = imageUrl.replaceAll(r'\\', '/');
 
     showDialog(
       context: context,
@@ -531,7 +536,8 @@ class _GeopointState extends State<Geopoint> {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                await _deleteGeopoint(id);
+                _showDeleteConfirmationDialog(
+                    id); // Mostrar confirmación antes de eliminar
               },
               child: Text('Eliminar'),
             ),
@@ -540,6 +546,36 @@ class _GeopointState extends State<Geopoint> {
                 Navigator.of(context).pop();
               },
               child: Text('Cancelar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(int id) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmación'),
+          content: Text('¿Está seguro de que desea eliminar este geopoint?'),
+          actions: [
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Eliminar'),
+              onPressed: () async {
+                Navigator.of(context)
+                    .pop(); // Cerrar el diálogo de confirmación
+                await _deleteGeopoint(id); // Eliminar geopoint
+                Navigator.of(context)
+                    .pop(); // Cerrar el diálogo de opciones y regresar al mapa
+              },
             ),
           ],
         );
@@ -575,6 +611,8 @@ class _GeopointState extends State<Geopoint> {
     final TextEditingController addressController =
         TextEditingController(text: address);
 
+    selectedImageFile = null; // Reiniciar imagen seleccionada
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -588,9 +626,9 @@ class _GeopointState extends State<Geopoint> {
                   children: [
                     TextField(
                       controller: beneficiaryIDController,
-                      keyboardType: TextInputType.number,
+                      readOnly: true, // Bloquear la edición del beneficiaryID
                       decoration: InputDecoration(
-                        labelText: 'Código del Beneficiario',
+                        labelText: 'Código del Beneficiario (No editable)',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -630,13 +668,39 @@ class _GeopointState extends State<Geopoint> {
                               ),
                             ],
                           )
-                        : ElevatedButton.icon(
-                            onPressed: () => _selectImage().then((_) {
-                              setState(() {});
-                            }),
-                            icon: Icon(Icons.camera_alt),
-                            label: Text('Tomar Fotografía'),
-                          ),
+                        : imageUrl.isNotEmpty &&
+                                Uri.tryParse(imageUrl)?.hasAbsolutePath == true
+                            ? Column(
+                                children: [
+                                  Image.network(
+                                    imageUrl,
+                                    height: 150,
+                                    width: 150,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (BuildContext context,
+                                        Object exception,
+                                        StackTrace? stackTrace) {
+                                      return const Text(
+                                          'No se pudo cargar la imagen');
+                                    },
+                                  ),
+                                  SizedBox(height: 10),
+                                  ElevatedButton.icon(
+                                    onPressed: () => _selectImage().then((_) {
+                                      setState(() {});
+                                    }),
+                                    icon: Icon(Icons.camera_alt),
+                                    label: Text('Repetir Fotografía'),
+                                  ),
+                                ],
+                              )
+                            : ElevatedButton.icon(
+                                onPressed: () => _selectImage().then((_) {
+                                  setState(() {});
+                                }),
+                                icon: Icon(Icons.camera_alt),
+                                label: Text('Tomar Fotografía'),
+                              ),
                   ],
                 ),
               ),
@@ -661,7 +725,7 @@ class _GeopointState extends State<Geopoint> {
                     await _uploadImage();
                     await _updateGeopoint(
                       id,
-                      int.parse(beneficiaryIDController.text),
+                      beneficiaryID, // beneficiaryID no editable
                       nombreController.text,
                       addressController.text,
                       selectedImageUrl ?? imageUrl,
@@ -681,47 +745,47 @@ class _GeopointState extends State<Geopoint> {
 
   Future<void> _updateGeopoint(int id, int beneficiaryID, String nombre,
       String address, String imageURL) async {
-    // Obtener las coordenadas actuales del punto que se está editando
     Marker? currentMarker;
     try {
       currentMarker = markers
           .firstWhere((marker) => marker.markerId.value == id.toString());
+
+      final double latitude = currentMarker.position.latitude;
+      final double longitude = currentMarker.position.longitude;
+
+      final response = await http.put(
+        Uri.parse('http://192.168.1.68:8080/geopoints/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'beneficiary_id': beneficiaryID,
+          'nombre': nombre,
+          'latitude': latitude,
+          'longitude': longitude,
+          'address': address,
+          'image_url': imageURL,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Geopoint actualizado con éxito')),
+        );
+        Navigator.of(context).pop(); // Cerrar la ventana de información
+        _fetchAndDisplayGeopoints();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar el geopoint')),
+        );
+      }
     } catch (e) {
+      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Error al encontrar el geopoint para actualizar.')),
       );
       return;
-    }
-
-    // Mantener las coordenadas originales si no han cambiado
-    final double latitude = currentMarker.position.latitude;
-    final double longitude = currentMarker.position.longitude;
-
-    final response = await http.put(
-      Uri.parse('http://192.168.1.68:8080/geopoints/$id'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'beneficiary_id': beneficiaryID,
-        'nombre': nombre,
-        'latitude': latitude,
-        'longitude': longitude,
-        'address': address,
-        'image_url': imageURL,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Geopoint actualizado con éxito')),
-      );
-      _fetchAndDisplayGeopoints();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar el geopoint')),
-      );
     }
   }
 
