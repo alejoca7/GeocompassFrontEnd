@@ -15,9 +15,9 @@ class Geovisitas extends StatefulWidget {
     this.beneficiaryID,
     this.nombre,
     this.address,
-    this.fechaNacimiento, // Nuevo campo
-    this.edad, // Nuevo campo
-    this.telefono, // Nuevo campo
+    this.fechaNacimiento,
+    this.edad,
+    this.telefono,
   });
 
   @override
@@ -74,17 +74,12 @@ class _GeovisitasState extends State<Geovisitas> {
 
   // Función para enviar datos a la API con validaciones
   Future<void> enviarEncuesta() async {
-    try {
-      if (nombreController.text.isEmpty ||
-          fechaVisitaController.text.isEmpty ||
-          beneficiaryIDController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Por favor, complete todos los campos con * ')),
-        );
-        return;
-      }
+    if (!_validarCamposObligatorios()) {
+      _mostrarMensajeError();
+      return;
+    }
 
+    try {
       final url = Uri.parse('http://192.168.1.68:8080/geovisitas');
       final response = await http.post(
         url,
@@ -129,6 +124,25 @@ class _GeovisitasState extends State<Geovisitas> {
         SnackBar(content: Text('Error al enviar la encuesta: $e')),
       );
     }
+  }
+
+  // Función para validar los campos obligatorios
+  bool _validarCamposObligatorios() {
+    return beneficiaryIDController.text.isNotEmpty &&
+        nombreController.text.isNotEmpty &&
+        fechaVisitaController.text.isNotEmpty &&
+        fechaNacimientoController.text.isNotEmpty &&
+        telefonoController.text.isNotEmpty;
+  }
+
+  // Mostrar mensaje de error si los campos no están completos
+  void _mostrarMensajeError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Por favor, complete todos los campos obligatorios.'),
+        backgroundColor: Colors.redAccent,
+      ),
+    );
   }
 
   // Función para mostrar una ventana emergente de éxito
@@ -270,6 +284,7 @@ class _GeovisitasState extends State<Geovisitas> {
                       label: 'Teléfono',
                       controller: telefonoController,
                       keyboardType: TextInputType.phone,
+                      showError: telefonoController.text.isEmpty,
                     ),
                   ],
                 ),
@@ -528,7 +543,7 @@ class TextFieldInput extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 2.0),
               child: Text(
-                "*",
+                "* Campo obligatorio",
                 style: TextStyle(color: Colors.red, fontSize: 12),
               ),
             ),

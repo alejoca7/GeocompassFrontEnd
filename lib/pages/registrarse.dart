@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'iniciar_sesion.dart'; // Importa la pantalla de inicio de sesión
+import 'iniciar_sesion.dart';
 
 class Registrarse extends StatefulWidget {
   @override
@@ -17,6 +17,18 @@ class _RegistrarseState extends State<Registrarse> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _registerUser() async {
+    if (_usernameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor, complete todos los campos.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
     final String apiUrl = "http://192.168.1.68:8080/users";
 
     final Map<String, dynamic> userData = {
@@ -33,38 +45,32 @@ class _RegistrarseState extends State<Registrarse> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Registro exitoso, muestra un cuadro de diálogo y redirige
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Registro Exitoso'),
-              content: Text('El usuario ha sido registrado correctamente.'),
-              actions: <Widget>[
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Cierra el cuadro de diálogo
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => IniciarSesion()),
-                    ); // Redirige a la pantalla de inicio de sesión
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        // Error en el registro, muestra un mensaje
+        // Registro exitoso
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Error al registrar usuario: ${response.body}')),
+            content: Text('Usuario registrado con éxito.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => IniciarSesion()),
+        );
+      } else {
+        // Error en el registro
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al registrar usuario: ${response.body}'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión: $e')),
+        SnackBar(
+          content: Text('Error de conexión: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -102,8 +108,7 @@ class _RegistrarseState extends State<Registrarse> {
                   ),
                 ),
                 child: Padding(
-                  padding:
-                      EdgeInsets.fromLTRB(30, 20, 30, 20), // Ajuste de padding
+                  padding: EdgeInsets.fromLTRB(30, 20, 30, 20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -115,7 +120,7 @@ class _RegistrarseState extends State<Registrarse> {
                             icon: Icon(Icons.arrow_back,
                                 color: Color(0xFF01035C)),
                             onPressed: () {
-                              Navigator.pop(context); // Navega hacia atrás
+                              Navigator.pop(context);
                             },
                           ),
                           Expanded(
@@ -132,12 +137,10 @@ class _RegistrarseState extends State<Registrarse> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          SizedBox(
-                              width: 48), // Espacio para equilibrar la flecha
+                          SizedBox(width: 48),
                         ],
                       ),
-                      SizedBox(
-                          height: 20), // Espacio entre el título y los campos
+                      SizedBox(height: 20),
                       // Campos de entrada
                       Container(
                         margin: EdgeInsets.only(bottom: 20),
@@ -231,7 +234,7 @@ class _RegistrarseState extends State<Registrarse> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 30), // Espacio entre campos y botón
+                      SizedBox(height: 30),
                       // Botón de registrarse
                       Container(
                         width: double.infinity,
@@ -242,8 +245,7 @@ class _RegistrarseState extends State<Registrarse> {
                         padding: EdgeInsets.symmetric(vertical: 15),
                         child: Center(
                           child: GestureDetector(
-                            onTap:
-                                _registerUser, // Llama a la función para registrar
+                            onTap: _registerUser,
                             child: Text(
                               'REGISTRARSE',
                               style: GoogleFonts.getFont(
@@ -258,10 +260,8 @@ class _RegistrarseState extends State<Registrarse> {
                           ),
                         ),
                       ),
-                      SizedBox(
-                          height:
-                              20), // Espacio entre botón y texto de "Ya tienes cuenta"
-                      // Texto de "Ya tienes cuenta"
+                      SizedBox(height: 20),
+                      // Texto de "¿Ya tienes cuenta?"
                       Text(
                         '¿Ya tienes cuenta?',
                         style: GoogleFonts.getFont(
@@ -273,14 +273,11 @@ class _RegistrarseState extends State<Registrarse> {
                           color: Color(0xFF212121),
                         ),
                       ),
-                      SizedBox(
-                          height:
-                              10), // Espacio entre texto y botón de iniciar sesión
+                      SizedBox(height: 10),
                       // Botón de iniciar sesión
                       GestureDetector(
                         onTap: () {
-                          Navigator.pop(
-                              context); // Volver a la pantalla de inicio de sesión
+                          Navigator.pop(context);
                         },
                         child: Container(
                           decoration: BoxDecoration(

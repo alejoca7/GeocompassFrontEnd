@@ -19,11 +19,17 @@ class _IniciarSesionState extends State<IniciarSesion> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _loginUser() async {
-    final String apiUrl =
-        "http://192.168.1.68:8080/login"; // Cambia a la ruta correcta si es necesario
+    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor, complete todos los campos.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
 
-    print("Username: ${_usernameController.text}");
-    print("Password: ${_passwordController.text}");
+    final String apiUrl = "http://192.168.1.68:8080/login";
 
     final Map<String, dynamic> loginData = {
       "username": _usernameController.text.trim(),
@@ -38,22 +44,33 @@ class _IniciarSesionState extends State<IniciarSesion> {
       );
 
       if (response.statusCode == 200) {
-        // Ingreso exitoso, redirige al usuario a menu.dart
+        // Inicio de sesión exitoso, muestra el nombre del usuario
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('¡Bienvenido ${_usernameController.text}!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Redirige al usuario a menu.dart
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  Menu()), // Asegúrate de que Menu esté definido
+          MaterialPageRoute(builder: (context) => Menu()),
         );
       } else {
         // Error en el ingreso, muestra un mensaje
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error en el ingreso: ${response.body}')),
+          SnackBar(
+            content: Text('Error en el ingreso: ${response.body}'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión: $e')),
+        SnackBar(
+          content: Text('Error de conexión: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -91,8 +108,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
                   ),
                 ),
                 child: Padding(
-                  padding:
-                      EdgeInsets.fromLTRB(30, 20, 30, 20), // Ajuste de padding
+                  padding: EdgeInsets.fromLTRB(30, 20, 30, 20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -107,8 +123,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        Inicio()), // Asegúrate de que Inicio esté definido
+                                    builder: (context) => Inicio()),
                               );
                             },
                           ),
@@ -126,12 +141,10 @@ class _IniciarSesionState extends State<IniciarSesion> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          SizedBox(
-                              width: 48), // Espacio para equilibrar la flecha
+                          SizedBox(width: 48),
                         ],
                       ),
-                      SizedBox(
-                          height: 20), // Espacio entre el título y los campos
+                      SizedBox(height: 20),
                       // Campos de entrada
                       Container(
                         margin: EdgeInsets.only(bottom: 20),
@@ -201,11 +214,10 @@ class _IniciarSesionState extends State<IniciarSesion> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 30), // Espacio entre campos y botón
+                      SizedBox(height: 30),
                       // Botón de iniciar sesión
                       GestureDetector(
-                        onTap:
-                            _loginUser, // Llama a la función para iniciar sesión
+                        onTap: _loginUser,
                         child: Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -228,9 +240,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
                           ),
                         ),
                       ),
-                      SizedBox(
-                          height:
-                              20), // Espacio entre botón y texto de "¿No tienes cuenta?"
+                      SizedBox(height: 20),
                       // Texto de "¿No tienes cuenta?"
                       Text(
                         '¿No tienes cuenta?',
@@ -243,17 +253,14 @@ class _IniciarSesionState extends State<IniciarSesion> {
                           color: Color(0xFF212121),
                         ),
                       ),
-                      SizedBox(
-                          height:
-                              10), // Espacio entre texto y botón de registro
+                      SizedBox(height: 10),
                       // Botón de registro
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    Registrarse()), // Asegúrate de que Registrarse esté definido
+                                builder: (context) => Registrarse()),
                           );
                         },
                         child: Container(
