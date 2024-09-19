@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'geovisitas.dart';
+import 'package:intl/intl.dart';
 
 class Geopoint extends StatefulWidget {
   @override
@@ -102,7 +104,7 @@ class _GeopointState extends State<Geopoint> {
           final LatLng position =
               LatLng(geopoint['latitude'], geopoint['longitude']);
           final Marker marker = Marker(
-            markerId: MarkerId(geopoint['ID'].toString()), // Usar el ID real
+            markerId: MarkerId(geopoint['ID'].toString()),
             position: position,
             icon: customIcon ?? BitmapDescriptor.defaultMarker,
             infoWindow: InfoWindow(
@@ -114,10 +116,13 @@ class _GeopointState extends State<Geopoint> {
                   selectedMarkerId = geopoint['ID'];
                 });
                 _showInfoWindow(
-                  geopoint['ID'], // Usar ID para modificar
+                  geopoint['ID'],
                   geopoint['beneficiary_id'],
                   geopoint['nombre'],
                   geopoint['address'],
+                  geopoint['fecha_nacimiento'],
+                  geopoint['edad'],
+                  geopoint['telefono'],
                   geopoint['image_url'],
                 );
               },
@@ -177,6 +182,10 @@ class _GeopointState extends State<Geopoint> {
         TextEditingController();
     final TextEditingController nombreController = TextEditingController();
     final TextEditingController addressController = TextEditingController();
+    final TextEditingController fechaNacimientoController =
+        TextEditingController();
+    final TextEditingController edadController = TextEditingController();
+    final TextEditingController telefonoController = TextEditingController();
 
     showDialog(
       context: context,
@@ -210,6 +219,48 @@ class _GeopointState extends State<Geopoint> {
                       controller: addressController,
                       decoration: InputDecoration(
                         labelText: 'Dirección',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: fechaNacimientoController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Fecha de Nacimiento',
+                        border: OutlineInputBorder(),
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime(2101),
+                        );
+                        if (pickedDate != null) {
+                          setState(() {
+                            fechaNacimientoController.text =
+                                DateFormat('dd/MM/yyyy').format(pickedDate);
+                          });
+                        }
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: edadController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Edad',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: telefonoController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        labelText: 'Teléfono',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -253,18 +304,13 @@ class _GeopointState extends State<Geopoint> {
                 TextButton(
                   child: Text('Guardar'),
                   onPressed: () async {
-                    if (selectedLocation == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Seleccione una ubicación en el mapa.'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    if (beneficiaryIDController.text.isEmpty ||
+                    if (selectedLocation == null ||
+                        beneficiaryIDController.text.isEmpty ||
                         nombreController.text.isEmpty ||
                         addressController.text.isEmpty ||
+                        fechaNacimientoController.text.isEmpty ||
+                        edadController.text.isEmpty ||
+                        telefonoController.text.isEmpty ||
                         selectedImageFile == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -290,11 +336,14 @@ class _GeopointState extends State<Geopoint> {
                       nombreController.text,
                       selectedLocation!,
                       addressController.text,
+                      fechaNacimientoController.text,
+                      int.parse(edadController.text),
+                      telefonoController.text,
                       selectedImageUrl ?? '',
                     );
 
-                    Navigator.of(context).pop(); // Cerrar el dialog de progreso
-                    Navigator.of(context).pop(); // Cerrar el dialog principal
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                   },
                 ),
               ],
@@ -335,8 +384,15 @@ class _GeopointState extends State<Geopoint> {
     }
   }
 
-  Future<void> _saveGeopoint(int beneficiaryID, String nombre, LatLng location,
-      String address, String imageURL) async {
+  Future<void> _saveGeopoint(
+      int beneficiaryID,
+      String nombre,
+      LatLng location,
+      String address,
+      String fechaNacimiento,
+      int edad,
+      String telefono,
+      String imageURL) async {
     final response = await http.post(
       Uri.parse('http://192.168.1.68:8080/geopoints'),
       headers: <String, String>{
@@ -348,6 +404,9 @@ class _GeopointState extends State<Geopoint> {
         'latitude': location.latitude,
         'longitude': location.longitude,
         'address': address,
+        'fecha_nacimiento': fechaNacimiento,
+        'edad': edad,
+        'telefono': telefono,
         'image_url': imageURL,
       }),
     );
@@ -357,29 +416,31 @@ class _GeopointState extends State<Geopoint> {
         SnackBar(content: Text('Geopoint guardado con éxito')),
       );
 
-      final geopoint =
-          jsonDecode(response.body); // Obtener el geopoint del servidor
+      final geopoint = jsonDecode(response.body);
 
       final Marker marker = Marker(
-        markerId:
-            MarkerId(geopoint['ID'].toString()), // Usar el ID del geopoint real
+        markerId: MarkerId(geopoint['ID'].toString()),
         position: location,
         icon: customIcon ?? BitmapDescriptor.defaultMarker,
         infoWindow: InfoWindow(
           title: 'Código Niño: $beneficiaryID - $nombre',
           snippet: address,
           onTap: () {
-            _showInfoWindow(
-                geopoint['ID'], beneficiaryID, nombre, address, imageURL);
+            _navigateToGeovisitas(context,
+                beneficiaryID: beneficiaryID,
+                nombre: nombre,
+                address: address,
+                fechaNacimiento: fechaNacimiento,
+                edad: edad,
+                telefono: telefono);
           },
         ),
       );
 
       setState(() {
-        markers.add(marker); // Agregar el nuevo marcador inmediatamente
+        markers.add(marker);
       });
 
-      // Refrescar el estado de los geopoints
       await _fetchAndDisplayGeopoints();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -439,8 +500,30 @@ class _GeopointState extends State<Geopoint> {
     }
   }
 
+  void _navigateToGeovisitas(BuildContext context,
+      {required int beneficiaryID,
+      required String nombre,
+      required String address,
+      required String fechaNacimiento,
+      required int edad,
+      required String telefono}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Geovisitas(
+          beneficiaryID: beneficiaryID,
+          nombre: nombre,
+          address: address,
+          fechaNacimiento: fechaNacimiento,
+          edad: edad,
+          telefono: telefono,
+        ),
+      ),
+    );
+  }
+
   void _showInfoWindow(int id, int beneficiaryID, String nombre, String address,
-      String imageUrl) {
+      String fechaNacimiento, int edad, String telefono, String imageUrl) {
     imageUrl = imageUrl.replaceAll('localhost', '192.168.1.68');
     imageUrl = imageUrl.replaceAll(r'\\', '/');
 
@@ -464,6 +547,21 @@ class _GeopointState extends State<Geopoint> {
                 SizedBox(height: 5),
                 Text(
                   'Dirección: $address',
+                  style: TextStyle(color: Colors.black),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Fecha de Nacimiento: $fechaNacimiento',
+                  style: TextStyle(color: Colors.black),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Edad: $edad',
+                  style: TextStyle(color: Colors.black),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Teléfono: $telefono',
                   style: TextStyle(color: Colors.black),
                 ),
                 SizedBox(height: 10),
@@ -506,8 +604,22 @@ class _GeopointState extends State<Geopoint> {
             ),
             TextButton(
               onPressed: () {
-                _showEditDeleteDialog(
-                    id, beneficiaryID, nombre, address, imageUrl);
+                _navigateToGeovisitas(
+                  context,
+                  beneficiaryID: beneficiaryID,
+                  nombre: nombre,
+                  address: address,
+                  fechaNacimiento: fechaNacimiento,
+                  edad: edad,
+                  telefono: telefono,
+                );
+              },
+              child: Text('Llenar Geovisita'),
+            ),
+            TextButton(
+              onPressed: () {
+                _showEditDeleteDialog(id, beneficiaryID, nombre, address,
+                    fechaNacimiento, edad, telefono, imageUrl);
               },
               child: Text('Opciones'),
             ),
@@ -517,8 +629,15 @@ class _GeopointState extends State<Geopoint> {
     );
   }
 
-  void _showEditDeleteDialog(int id, int beneficiaryID, String nombre,
-      String address, String imageUrl) {
+  void _showEditDeleteDialog(
+      int id,
+      int beneficiaryID,
+      String nombre,
+      String address,
+      String fechaNacimiento,
+      int edad,
+      String telefono,
+      String imageUrl) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -529,7 +648,8 @@ class _GeopointState extends State<Geopoint> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _showEditDialog(id, beneficiaryID, nombre, address, imageUrl);
+                _showEditDialog(id, beneficiaryID, nombre, address,
+                    fechaNacimiento, edad, telefono, imageUrl);
               },
               child: Text('Editar'),
             ),
@@ -570,11 +690,9 @@ class _GeopointState extends State<Geopoint> {
             TextButton(
               child: Text('Eliminar'),
               onPressed: () async {
-                Navigator.of(context)
-                    .pop(); // Cerrar el diálogo de confirmación
-                await _deleteGeopoint(id); // Eliminar geopoint
-                Navigator.of(context)
-                    .pop(); // Cerrar el diálogo de opciones y regresar al mapa
+                Navigator.of(context).pop();
+                await _deleteGeopoint(id);
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -603,13 +721,19 @@ class _GeopointState extends State<Geopoint> {
   }
 
   void _showEditDialog(int id, int beneficiaryID, String nombre, String address,
-      String imageUrl) {
+      String fechaNacimiento, int edad, String telefono, String imageUrl) {
     final TextEditingController beneficiaryIDController =
         TextEditingController(text: beneficiaryID.toString());
     final TextEditingController nombreController =
         TextEditingController(text: nombre);
     final TextEditingController addressController =
         TextEditingController(text: address);
+    final TextEditingController fechaNacimientoController =
+        TextEditingController(text: fechaNacimiento);
+    final TextEditingController edadController =
+        TextEditingController(text: edad.toString());
+    final TextEditingController telefonoController =
+        TextEditingController(text: telefono);
 
     selectedImageFile = null; // Reiniciar imagen seleccionada
 
@@ -645,6 +769,48 @@ class _GeopointState extends State<Geopoint> {
                       controller: addressController,
                       decoration: InputDecoration(
                         labelText: 'Dirección',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: fechaNacimientoController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Fecha de Nacimiento',
+                        border: OutlineInputBorder(),
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime(2101),
+                        );
+                        if (pickedDate != null) {
+                          setState(() {
+                            fechaNacimientoController.text =
+                                DateFormat('dd/MM/yyyy').format(pickedDate);
+                          });
+                        }
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: edadController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Edad',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: telefonoController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        labelText: 'Teléfono',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -714,25 +880,32 @@ class _GeopointState extends State<Geopoint> {
                 TextButton(
                   child: Text('Guardar Cambios'),
                   onPressed: () async {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) => Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
+                    if (selectedImageFile != null) {
+                      await _uploadImage();
+                    }
 
-                    await _uploadImage();
+                    // Agregamos mensajes de depuración para revisar los valores
+                    print('Datos a actualizar:');
+                    print('Nombre: ${nombreController.text}');
+                    print('Dirección: ${addressController.text}');
+                    print(
+                        'Fecha de Nacimiento: ${fechaNacimientoController.text}');
+                    print('Edad: ${edadController.text}');
+                    print('Teléfono: ${telefonoController.text}');
+
                     await _updateGeopoint(
                       id,
-                      beneficiaryID, // beneficiaryID no editable
+                      beneficiaryID,
                       nombreController.text,
                       addressController.text,
+                      fechaNacimientoController.text,
+                      int.parse(edadController.text),
+                      telefonoController.text,
                       selectedImageUrl ?? imageUrl,
                     );
 
-                    Navigator.of(context).pop(); // Cerrar el dialog de progreso
-                    Navigator.of(context).pop(); // Cerrar el dialog principal
+                    Navigator.of(context).pop(); // Cerrar el dialogo
+                    _fetchAndDisplayGeopoints(); // Actualizar puntos en el mapa
                   },
                 ),
               ],
@@ -743,8 +916,15 @@ class _GeopointState extends State<Geopoint> {
     );
   }
 
-  Future<void> _updateGeopoint(int id, int beneficiaryID, String nombre,
-      String address, String imageURL) async {
+  Future<void> _updateGeopoint(
+      int id,
+      int beneficiaryID,
+      String nombre,
+      String address,
+      String fechaNacimiento,
+      int edad,
+      String telefono,
+      String imageURL) async {
     Marker? currentMarker;
     try {
       currentMarker = markers
@@ -752,6 +932,15 @@ class _GeopointState extends State<Geopoint> {
 
       final double latitude = currentMarker.position.latitude;
       final double longitude = currentMarker.position.longitude;
+
+      // Agregamos mensajes de depuración para revisar qué datos se están enviando
+      print('Enviando actualización al servidor...');
+      print('ID: $id');
+      print('Nombre: $nombre');
+      print('Dirección: $address');
+      print('Fecha de Nacimiento: $fechaNacimiento');
+      print('Edad: $edad');
+      print('Teléfono: $telefono');
 
       final response = await http.put(
         Uri.parse('http://192.168.1.68:8080/geopoints/$id'),
@@ -761,9 +950,13 @@ class _GeopointState extends State<Geopoint> {
         body: jsonEncode(<String, dynamic>{
           'beneficiary_id': beneficiaryID,
           'nombre': nombre,
-          'latitude': latitude,
-          'longitude': longitude,
+          'latitude': latitude, // Mantener latitud existente
+          'longitude': longitude, // Mantener longitud existente
           'address': address,
+          'fecha_nacimiento':
+              fechaNacimiento, // Enviar valor de fecha de nacimiento
+          'edad': edad, // Enviar valor de edad
+          'telefono': telefono, // Enviar valor de teléfono
           'image_url': imageURL,
         }),
       );
@@ -772,9 +965,8 @@ class _GeopointState extends State<Geopoint> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Geopoint actualizado con éxito')),
         );
-        Navigator.of(context).pop(); // Cerrar la ventana de información
-        _fetchAndDisplayGeopoints();
       } else {
+        print('Error en la respuesta del servidor: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al actualizar el geopoint')),
         );

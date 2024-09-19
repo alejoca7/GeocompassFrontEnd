@@ -4,6 +4,22 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Geovisitas extends StatefulWidget {
+  final int? beneficiaryID;
+  final String? nombre;
+  final String? address;
+  final String? fechaNacimiento; // Nuevo campo
+  final int? edad; // Nuevo campo
+  final String? telefono; // Nuevo campo
+
+  Geovisitas({
+    this.beneficiaryID,
+    this.nombre,
+    this.address,
+    this.fechaNacimiento, // Nuevo campo
+    this.edad, // Nuevo campo
+    this.telefono, // Nuevo campo
+  });
+
   @override
   _GeovisitasState createState() => _GeovisitasState();
 }
@@ -15,7 +31,7 @@ class _GeovisitasState extends State<Geovisitas> {
   TextEditingController fechaNacimientoController = TextEditingController();
   TextEditingController edadController = TextEditingController();
   TextEditingController fechaVisitaController = TextEditingController();
-  TextEditingController direccionController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
   TextEditingController telefonoController = TextEditingController();
   TextEditingController nombreMadreController = TextEditingController();
   TextEditingController nombrePadreController = TextEditingController();
@@ -31,6 +47,30 @@ class _GeovisitasState extends State<Geovisitas> {
   String tipoCasa = 'Seleccione una opción';
   String quienesTrabajan = 'Seleccione una opción';
   String trabajaElNino = 'Seleccione una opción';
+
+  @override
+  void initState() {
+    super.initState();
+    // Prellenar los campos solo si se proporcionan los datos desde Geopoint
+    if (widget.beneficiaryID != null) {
+      beneficiaryIDController.text = widget.beneficiaryID.toString();
+    }
+    if (widget.nombre != null) {
+      nombreController.text = widget.nombre!;
+    }
+    if (widget.address != null) {
+      addressController.text = widget.address!;
+    }
+    if (widget.fechaNacimiento != null) {
+      fechaNacimientoController.text = widget.fechaNacimiento!;
+    }
+    if (widget.edad != null) {
+      edadController.text = widget.edad.toString();
+    }
+    if (widget.telefono != null) {
+      telefonoController.text = widget.telefono!;
+    }
+  }
 
   // Función para enviar datos a la API con validaciones
   Future<void> enviarEncuesta() async {
@@ -57,7 +97,7 @@ class _GeovisitasState extends State<Geovisitas> {
           'fecha_nacimiento': fechaNacimientoController.text,
           'edad': int.parse(edadController.text),
           'fecha_visita': fechaVisitaController.text,
-          'direccion': direccionController.text,
+          'address': addressController.text,
           'telefono': telefonoController.text,
           'nombre_madre': nombreMadreController.text,
           'nombre_padre': nombrePadreController.text,
@@ -69,8 +109,7 @@ class _GeovisitasState extends State<Geovisitas> {
           'como_vive': comoVive,
           'tipo_casa': tipoCasa,
           'quienes_trabajan': quienesTrabajan,
-          'trabaja_nino':
-              trabajaElNino, // Se asegura que se llame correctamente
+          'trabaja_nino': trabajaElNino,
           'observaciones': observacionesController.text,
         }),
       );
@@ -120,7 +159,7 @@ class _GeovisitasState extends State<Geovisitas> {
     fechaNacimientoController.clear();
     edadController.clear();
     fechaVisitaController.clear();
-    direccionController.clear();
+    addressController.clear();
     telefonoController.clear();
     nombreMadreController.clear();
     nombrePadreController.clear();
@@ -224,7 +263,7 @@ class _GeovisitasState extends State<Geovisitas> {
                     ),
                     TextFieldInput(
                       label: 'Dirección',
-                      controller: direccionController,
+                      controller: addressController,
                       keyboardType: TextInputType.text,
                     ),
                     TextFieldInput(
