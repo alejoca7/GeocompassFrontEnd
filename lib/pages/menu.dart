@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/geovisitas.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'geopoint.dart'; // Importa la pantalla de Geopoint
+import 'geodatos.dart';
 
 class Menu extends StatelessWidget {
   @override
@@ -70,7 +71,7 @@ class Menu extends StatelessWidget {
                   context,
                   'GEODATOS',
                   'assets/images/cdmp_fw_9_vr_x_01.png',
-                  null, // Coloca la ventana que quieras o null si aún no está implementada
+                  Geodatos(), // Coloca la ventana que quieras o null si aún no está implementada
                 ),
                 SizedBox(height: 40),
               ],

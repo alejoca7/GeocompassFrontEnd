@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/menu.dart';
 import 'package:flutter_app/pages/geopoint.dart';
 import 'package:flutter_app/pages/geovisitas.dart';
-//import 'package:flutter_app/pages/geodatos.dart';
-//import 'package:flutter_app/pages/geodatos_1.dart';
+import 'package:flutter_app/pages/geodatos.dart';
 import 'package:flutter_app/pages/iniciar_sesion.dart';
 import 'package:flutter_app/pages/inicio.dart';
 import 'package:flutter_app/pages/registrarse.dart';
@@ -24,7 +23,7 @@ class MyApp extends StatelessWidget {
         '/menu': (context) => Menu(),
         '/geopoint': (context) => Geopoint(),
         '/geovisitas': (context) => Geovisitas(),
-//        '/geodatos1': (context) => Geodatos1(),
+        '/geodatos': (context) => Geodatos(),
         '/iniciar_sesion': (context) => IniciarSesion(),
         '/registrarse': (context) => Registrarse(),
       },

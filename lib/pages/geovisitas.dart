@@ -40,6 +40,8 @@ class _GeovisitasState extends State<Geovisitas> {
   TextEditingController mujeresController = TextEditingController();
   TextEditingController inscritosCdiController = TextEditingController();
   TextEditingController observacionesController = TextEditingController();
+  TextEditingController usuarioVisitaController =
+      TextEditingController(); // Nuevo campo
 
   // Variables para Dropdowns
   String conQuienVive = 'Seleccione una opción';
@@ -106,6 +108,7 @@ class _GeovisitasState extends State<Geovisitas> {
           'quienes_trabajan': quienesTrabajan,
           'trabaja_nino': trabajaElNino,
           'observaciones': observacionesController.text,
+          'uservisita': usuarioVisitaController.text, // Nuevo campo agregado
         }),
       );
 
@@ -132,7 +135,9 @@ class _GeovisitasState extends State<Geovisitas> {
         nombreController.text.isNotEmpty &&
         fechaVisitaController.text.isNotEmpty &&
         fechaNacimientoController.text.isNotEmpty &&
-        telefonoController.text.isNotEmpty;
+        telefonoController.text.isNotEmpty &&
+        usuarioVisitaController.text
+            .isNotEmpty; // Asegurarse que el campo usuario visita no esté vacío
   }
 
   // Mostrar mensaje de error si los campos no están completos
@@ -182,6 +187,7 @@ class _GeovisitasState extends State<Geovisitas> {
     mujeresController.clear();
     inscritosCdiController.clear();
     observacionesController.clear();
+    usuarioVisitaController.clear(); // Limpiar el campo usuario visita
     setState(() {
       conQuienVive = 'Seleccione una opción';
       comoVive = 'Seleccione una opción';
@@ -214,7 +220,7 @@ class _GeovisitasState extends State<Geovisitas> {
               Text(
                 'GEOVISITAS',
                 style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 25,
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
               ),
@@ -442,6 +448,12 @@ class _GeovisitasState extends State<Geovisitas> {
                     contentPadding: EdgeInsets.all(16),
                   ),
                 ),
+              ),
+              SizedBox(height: 20),
+              TextFieldInput(
+                label: 'Tutor Visita', // Nuevo campo de usuario visita
+                controller: usuarioVisitaController,
+                keyboardType: TextInputType.text,
               ),
               SizedBox(height: 20),
               Center(
