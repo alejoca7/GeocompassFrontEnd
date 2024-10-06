@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.flutter_app" // Cambia esto por el paquete de tu aplicación
+    namespace = "Geocompass" // Cambia esto por el paquete de tu aplicación
     compileSdk = 34
 
     defaultConfig {

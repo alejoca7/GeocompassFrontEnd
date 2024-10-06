@@ -29,7 +29,7 @@ class _RegistrarseState extends State<Registrarse> {
       return;
     }
 
-    final String apiUrl = "http://192.168.1.68:8080/users";
+    final String apiUrl = "https://geocompass-back-omega.vercel.app/users";
 
     final Map<String, dynamic> userData = {
       "username": _usernameController.text,

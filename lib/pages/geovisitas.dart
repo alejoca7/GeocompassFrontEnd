@@ -82,7 +82,8 @@ class _GeovisitasState extends State<Geovisitas> {
     }
 
     try {
-      final url = Uri.parse('http://192.168.1.68:8080/geovisitas');
+      final url =
+          Uri.parse('https://geocompass-back-omega.vercel.app/geovisitas');
       final response = await http.post(
         url,
         headers: <String, String>{
@@ -338,12 +339,12 @@ class _GeovisitasState extends State<Geovisitas> {
                     ),
                     SizedBox(height: 10),
                     TextFieldInput(
-                      label: 'Inscritos en el C.D.I. Peña de Horeb',
+                      label: 'Inscritos en el C.D.I. Pena de Horeb',
                       controller: inscritosCdiController,
                       keyboardType: TextInputType.number,
                     ),
                     DropdownField(
-                      label: 'Con quién vive el niño (a)',
+                      label: 'Con quién vive el nino (a)',
                       items: [
                         'Seleccione una opción',
                         'Padre',
@@ -404,9 +405,9 @@ class _GeovisitasState extends State<Geovisitas> {
                       label: 'Quiénes trabajan',
                       items: [
                         'Seleccione una opción',
-                        'Papá',
-                        'Mamá',
-                        'Papá/Mamá',
+                        'Papa',
+                        'Mama',
+                        'Papa/Mama',
                         'Otros'
                       ],
                       value: quienesTrabajan,
@@ -417,8 +418,8 @@ class _GeovisitasState extends State<Geovisitas> {
                       },
                     ),
                     DropdownField(
-                      label: 'Trabaja el niño',
-                      items: ['Seleccione una opción', 'Sí', 'No'],
+                      label: 'Trabaja el nino',
+                      items: ['Seleccione una opción', 'Si', 'No'],
                       value: trabajaElNino,
                       onChanged: (value) {
                         setState(() {

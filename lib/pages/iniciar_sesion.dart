@@ -29,7 +29,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
       return;
     }
 
-    final String apiUrl = "http://192.168.1.68:8080/login";
+    final String apiUrl = "https://geocompass-back-omega.vercel.app/login";
 
     final Map<String, dynamic> loginData = {
       "username": _usernameController.text.trim(),

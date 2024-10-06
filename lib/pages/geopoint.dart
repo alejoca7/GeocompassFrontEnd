@@ -92,8 +92,8 @@ class _GeopointState extends State<Geopoint> {
   }
 
   Future<void> _fetchAndDisplayGeopoints() async {
-    final response =
-        await http.get(Uri.parse('http://192.168.1.68:8080/geopoints'));
+    final response = await http
+        .get(Uri.parse('https://geocompass-back-omega.vercel.app/geopoints'));
 
     if (response.statusCode == 200) {
       final List<dynamic> geopoints = jsonDecode(response.body);
@@ -360,7 +360,8 @@ class _GeopointState extends State<Geopoint> {
     final bytes = await selectedImageFile!.readAsBytes();
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.1.68:8080/upload'),
+      Uri.parse(
+          'https://geocompass-back-omega.vercel.app/upload'), // URL de tu backend
     )..files.add(
         http.MultipartFile.fromBytes(
           'image',
@@ -375,7 +376,7 @@ class _GeopointState extends State<Geopoint> {
     if (res.statusCode == 200) {
       final imageUrl = jsonDecode(resBody.body)['image_url'];
       setState(() {
-        selectedImageUrl = imageUrl;
+        selectedImageUrl = imageUrl; // Guardar la URL de la imagen subida
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -385,16 +386,17 @@ class _GeopointState extends State<Geopoint> {
   }
 
   Future<void> _saveGeopoint(
-      int beneficiaryID,
-      String nombre,
-      LatLng location,
-      String address,
-      String fechaNacimiento,
-      int edad,
-      String telefono,
-      String imageURL) async {
+    int beneficiaryID,
+    String nombre,
+    LatLng location,
+    String address,
+    String fechaNacimiento,
+    int edad,
+    String telefono,
+    String imageURL, // URL de la imagen subida
+  ) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.68:8080/geopoints'),
+      Uri.parse('https://geocompass-back-omega.vercel.app/geopoints'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -407,7 +409,7 @@ class _GeopointState extends State<Geopoint> {
         'fecha_nacimiento': fechaNacimiento,
         'edad': edad,
         'telefono': telefono,
-        'image_url': imageURL,
+        'image_url': imageURL, // Enviar la URL de la imagen al backend
       }),
     );
 
@@ -703,7 +705,7 @@ class _GeopointState extends State<Geopoint> {
 
   Future<void> _deleteGeopoint(int id) async {
     final response = await http.delete(
-      Uri.parse('http://192.168.1.68:8080/geopoints/$id'),
+      Uri.parse('https://geocompass-back-omega.vercel.app/geopoints/$id'),
     );
 
     if (response.statusCode == 200) {
@@ -943,7 +945,7 @@ class _GeopointState extends State<Geopoint> {
       print('Teléfono: $telefono');
 
       final response = await http.put(
-        Uri.parse('http://192.168.1.68:8080/geopoints/$id'),
+        Uri.parse('https://geocompass-back-omega.vercel.app/geopoints/$id'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
