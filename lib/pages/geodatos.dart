@@ -21,8 +21,8 @@ class _GeodatosState extends State<Geodatos> {
   List<dynamic> displayGeodatos = [];
   TextEditingController searchController = TextEditingController();
   List<bool> selectedRows = [];
-  String selectedFilter = 'Todos'; // Filtro por defecto
-  List<String> uniqueTutores = ['Todos']; // Lista para los tutores únicos
+  String selectedFilter = 'Todos';
+  List<String> uniqueTutores = ['Todos'];
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _GeodatosState extends State<Geodatos> {
           geodatos = json.decode(response.body);
           displayGeodatos = geodatos;
           selectedRows = List<bool>.filled(geodatos.length, false);
-          extractUniqueTutores(); // Extraer los tutores únicos
+          extractUniqueTutores();
         });
       } else {
         throw Exception('Failed to load geodatos');
@@ -50,9 +50,8 @@ class _GeodatosState extends State<Geodatos> {
     }
   }
 
-  // Función para extraer tutores únicos
   void extractUniqueTutores() {
-    Set<String> tutoresSet = {}; // Utilizamos un Set para evitar duplicados
+    Set<String> tutoresSet = {};
     for (var item in geodatos) {
       if (item['uservisita'] != null && item['uservisita'] != '') {
         tutoresSet.add(item['uservisita']);
@@ -78,7 +77,6 @@ class _GeodatosState extends State<Geodatos> {
     }
   }
 
-  // Aplicar filtro según el tutor seleccionado
   void applyFilter() {
     if (selectedFilter == 'Todos') {
       setState(() {
@@ -94,7 +92,6 @@ class _GeodatosState extends State<Geodatos> {
     }
   }
 
-  // Función para exportar a CSV con UTF-8-BOM
   Future<void> exportToCSV() async {
     List<List<dynamic>> rows = [
       [
@@ -149,25 +146,19 @@ class _GeodatosState extends State<Geodatos> {
     }
 
     String csv = const ListToCsvConverter().convert(rows);
-
-    // Añadimos el BOM al inicio del CSV
     csv = '\uFEFF' + csv;
 
-    // Obtén el directorio de almacenamiento externo
     final directory = await getExternalStorageDirectory();
     String baseFilePath = path.join(directory!.path, 'geodatos.csv');
 
-    // Verifica si ya existe un archivo con ese nombre
     File file = File(baseFilePath);
     int counter = 1;
     while (await file.exists()) {
-      // Si el archivo existe, añade un sufijo numérico
       baseFilePath = path.join(directory.path, 'geodatos($counter).csv');
       file = File(baseFilePath);
       counter++;
     }
 
-    // Crea y guarda el archivo CSV con BOM para que se interpreten bien los caracteres especiales
     await file.writeAsString(csv, encoding: Encoding.getByName('utf-8')!);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -181,94 +172,173 @@ class _GeodatosState extends State<Geodatos> {
     );
   }
 
-  // Función para exportar a PDF
   Future<void> exportToPDF() async {
     final pdf = pw.Document();
     final logo = pw.MemoryImage(
-      (await rootBundle.load('assets/images/logogeocompass_31.png'))
+      (await rootBundle.load('assets/images/logogeocompass_111.png'))
           .buffer
           .asUint8List(),
     );
     final currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
     final currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
 
-    final List<List<String>> data = displayGeodatos
-        .where((geodato) => selectedRows[displayGeodatos.indexOf(geodato)])
-        .map((geodato) => [
-              geodato['beneficiary_id'].toString(),
-              geodato['nombre']?.toString() ?? 'Desconocido',
-              geodato['fecha_nacimiento']?.toString() ?? 'No disponible',
-              geodato['edad']?.toString() ?? 'No disponible',
-              geodato['fecha_visita']?.toString() ?? 'No disponible',
-              geodato['address']?.toString() ?? 'No disponible',
-              geodato['telefono']?.toString() ?? 'No disponible',
-              geodato['nombre_madre']?.toString() ?? 'No disponible',
-              geodato['nombre_padre']?.toString() ?? 'No disponible',
-              geodato['nombre_encargado']?.toString() ?? 'No disponible',
-              geodato['hombres']?.toString() ?? 'No disponible',
-              geodato['mujeres']?.toString() ?? 'No disponible',
-              geodato['inscritos_cdi']?.toString() ?? 'No disponible',
-              geodato['con_quien_vive']?.toString() ?? 'No disponible',
-              geodato['como_vive']?.toString() ?? 'No disponible',
-              geodato['tipo_casa']?.toString() ?? 'No disponible',
-              geodato['quienes_trabajan']?.toString() ?? 'No disponible',
-              geodato['trabaja_nino']?.toString() ?? 'No disponible',
-              geodato['observaciones']?.toString() ?? 'No disponible',
-              geodato['uservisita']?.toString() ?? 'Desconocido',
-            ])
-        .toList();
+    for (int i = 0; i < displayGeodatos.length; i++) {
+      if (selectedRows[i]) {
+        final geodato = displayGeodatos[i];
 
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        pdf.addPage(
+          pw.Page(
+            build: (pw.Context context) {
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Image(logo, width: 50, height: 50),
-                  pw.Text('Reporte de Geovisitas',
-                      style: pw.TextStyle(
-                          fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                  pw.Text('Fecha: $currentDate\nHora: $currentTime',
-                      style: pw.TextStyle(fontSize: 12)),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Image(logo, width: 50, height: 50),
+                      pw.Text('Registro de Visitas Domiciliarias',
+                          style: pw.TextStyle(
+                              fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Fecha: $currentDate\nHora: $currentTime',
+                          style: pw.TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'DATOS PERSONALES',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.blue900,
+                    ),
+                  ),
+                  pw.Table.fromTextArray(
+                    headers: [],
+                    data: [
+                      ['Nombre del Beneficiario(a)', geodato['nombre'] ?? ''],
+                      ['Edad', geodato['edad']?.toString() ?? ''],
+                      [
+                        'Fecha de Nacimiento',
+                        geodato['fecha_nacimiento']?.toString() ?? ''
+                      ],
+                      ['Código', geodato['beneficiary_id'].toString()],
+                      ['Dirección', geodato['address'] ?? ''],
+                      ['Teléfono', geodato['telefono']?.toString() ?? ''],
+                      [
+                        'Fecha que efectuaron la visita',
+                        geodato['fecha_visita']
+                      ]
+                    ],
+                    border: pw.TableBorder.all(color: PdfColors.grey600),
+                    cellStyle: pw.TextStyle(fontSize: 10),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'ASPECTOS FAMILIARES',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.blue900,
+                    ),
+                  ),
+                  pw.Table.fromTextArray(
+                    headers: [],
+                    data: [
+                      ['Nombre de la Madre', geodato['nombre_madre'] ?? ''],
+                      ['Nombre del Padre', geodato['nombre_padre'] ?? ''],
+                      [
+                        'Nombre del Encargado',
+                        geodato['nombre_encargado'] ?? ''
+                      ],
+                      [
+                        'Cantidad de Hijos (Hombres/Mujeres)',
+                        '${geodato['hombres'] ?? ''} / ${geodato['mujeres'] ?? ''}'
+                      ],
+                      [
+                        'Inscritos en el C.D.I. Peña de Horeb',
+                        geodato['inscritos_cdi']?.toString() ?? ''
+                      ],
+                      [
+                        'Con quién vive el niño',
+                        geodato['con_quien_vive'] ?? ''
+                      ],
+                    ],
+                    border: pw.TableBorder.all(color: PdfColors.grey600),
+                    cellStyle: pw.TextStyle(fontSize: 10),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'ASPECTO DOMICILIAR',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.blue900,
+                    ),
+                  ),
+                  pw.Table.fromTextArray(
+                    headers: [],
+                    data: [
+                      [
+                        'Casa (Propia/Alquilada/Prestada)',
+                        geodato['tipo_casa']?.toString() ?? ''
+                      ],
+                      ['Tipo de Casa', geodato['como_vive'] ?? ''],
+                    ],
+                    border: pw.TableBorder.all(color: PdfColors.grey600),
+                    cellStyle: pw.TextStyle(fontSize: 10),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'ASPECTO LABORAL',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.blue900,
+                    ),
+                  ),
+                  pw.Table.fromTextArray(
+                    headers: [],
+                    data: [
+                      ['Quienes Trabajan', geodato['quienes_trabajan'] ?? ''],
+                      ['Trabaja el niño', geodato['trabaja_nino'] ?? ''],
+                    ],
+                    border: pw.TableBorder.all(color: PdfColors.grey600),
+                    cellStyle: pw.TextStyle(fontSize: 10),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'Observaciones: ${geodato['observaciones'] ?? ''}',
+                    style: pw.TextStyle(fontSize: 12),
+                  ),
+                  pw.SizedBox(
+                      height:
+                          150), // Añadir un espacio entre observaciones y Vo.Bo.
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Vo.Bo. DIRECTOR'),
+                      pw.Text('Vo.Bo. Coordinador de Programas'),
+                    ],
+                  ),
                 ],
-              ),
-              pw.SizedBox(height: 10),
-              pw.Table.fromTextArray(
-                headers: [
-                  'ID',
-                  'Nombre',
-                  'Fecha Nacimiento',
-                  'Edad',
-                  'Fecha Visita',
-                  'Direccion',
-                  'Telefono',
-                  'Nombre Madre',
-                  'Nombre Padre',
-                  'Nombre Encargado',
-                  'Hombres',
-                  'Mujeres',
-                  'Inscritos CDI',
-                  'Con Quien Vive',
-                  'Como Vive',
-                  'Tipo Casa',
-                  'Quienes Trabajan',
-                  'Trabaja Niño',
-                  'Observaciones',
-                  'Tutor Visita'
-                ],
-                data: data,
-              ),
-            ],
-          );
-        },
-      ),
-    );
+              );
+            },
+          ),
+        );
+      }
+    }
 
     final directory = await getExternalStorageDirectory();
-    final file = File('${directory!.path}/geodatos.pdf');
+    String baseFilePath = path.join(directory!.path, 'geodatos.pdf');
+
+    File file = File(baseFilePath);
+    int counter = 1;
+    while (await file.exists()) {
+      baseFilePath = path.join(directory.path, 'geodatos($counter).pdf');
+      file = File(baseFilePath);
+      counter++;
+    }
+
     await file.writeAsBytes(await pdf.save());
 
     ScaffoldMessenger.of(context).showSnackBar(

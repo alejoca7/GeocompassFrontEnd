@@ -16,7 +16,7 @@
             android:value="AIzaSyBSqzPe9hzz26muXSyINGR18Wf2_ES5DXA" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.flutter_app.MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|density|uiMode"
