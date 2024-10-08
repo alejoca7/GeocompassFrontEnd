@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.flutter_app" // Cambia esto por el ID de tu aplicación
+        applicationId = "com.example.flutter_app" // 
         minSdk = 21
         targetSdk = 34
         versionCode = 1
@@ -21,6 +21,19 @@ android {
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        // Define el nombre del APK para el build de release
+        debug {
+            applicationIdSuffix ".debug"
+        }
+    }
+
+    // Esta configuración cambia el nombre del APK para todos los tipos de build
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def apkName = "Geocompass-${variant.buildType.name}.apk"
+            output.outputFileName = apkName
         }
     }
 

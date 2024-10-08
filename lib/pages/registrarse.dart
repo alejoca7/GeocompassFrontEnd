@@ -15,8 +15,11 @@ class _RegistrarseState extends State<Registrarse> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false; // Para controlar el estado de carga
 
   Future<void> _registerUser() async {
+    if (_isLoading) return; // Evitar múltiple ejecución si ya está cargando
+
     if (_usernameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty) {
@@ -28,6 +31,10 @@ class _RegistrarseState extends State<Registrarse> {
       );
       return;
     }
+
+    setState(() {
+      _isLoading = true; // Desactivar el botón durante la petición
+    });
 
     final String apiUrl = "https://geocompass-back-omega.vercel.app/users";
 
@@ -72,6 +79,10 @@ class _RegistrarseState extends State<Registrarse> {
           backgroundColor: Colors.redAccent,
         ),
       );
+    } finally {
+      setState(() {
+        _isLoading = false; // Reactivar el botón después de la petición
+      });
     }
   }
 
@@ -239,13 +250,18 @@ class _RegistrarseState extends State<Registrarse> {
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Color(0xFF01035C),
+                          color: _isLoading
+                              ? Colors.grey
+                              : Color(
+                                  0xFF01035C), // Cambiar color si está en modo carga
                           borderRadius: BorderRadius.circular(30),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 15),
                         child: Center(
                           child: GestureDetector(
-                            onTap: _registerUser,
+                            onTap: _isLoading
+                                ? null
+                                : _registerUser, // Desactivar botón si está en modo carga
                             child: Text(
                               'REGISTRARSE',
                               style: GoogleFonts.getFont(
